@@ -19,6 +19,33 @@ var genes =
 			"inline-block",
 		]
 	},
+
+	// -- Text 
+	{
+		attr: "text-align",
+		type: "choose",
+		options: [
+			"left",
+			"center",
+			"right",
+		]
+	},
+	{
+		attr: "text-decoration",
+		type: "choose",
+		options: [
+			"collection1",
+			"property1",
+			"none",
+			"underline",
+			"overline",
+			"line-through",
+			"initial",
+			"inherit",
+		]
+	},
+
+	// -- Color
 	{
 		attr: "color",
 		type: "color",
@@ -26,6 +53,32 @@ var genes =
 	{
 		attr: "backgroundColor",
 		type: "color",
+	},
+
+	// -- Padding / Margin
+	{
+		attr: "padding",
+		type: "nested",
+		template: "$0px $1px",
+		genes: 
+		[
+			{
+				type: "max",
+				max: 20,
+			},
+			{
+				type: "max",
+				max: 20,
+			},
+		]
+	},
+
+	// Border 
+	{
+		attr: "border-radius",
+		type: "max",
+		max: 20,
+		suffix: 'px'
 	},
 ];
 
@@ -42,7 +95,9 @@ var Generator = function(genes, container)
 	this.selected = [];
 
 	// the size of population to be generated
-	this.populationSize = 12;
+	this.populationSize = 40;
+	this.mutationFrequency = 3;
+
 }
 
 /**
@@ -50,28 +105,29 @@ var Generator = function(genes, container)
  */
 Generator.prototype.generatePopulation = function(fittestButtons)
 {
-	var fusionGenes = [],
-		initialPopulation = true;
-
-	if (fittestButtons !== undefined)
-	{
-		initialPopulation = false; 
-
-		for(geneKey in this.availableGenes)
-		{
-			fusionGenes.push(fittestButtons[Math.round(Math.random())].genes[geneKey]);
-		}
-	}
-
 	for (var i = 0; i < this.populationSize; i++)
 	{
-		var buttonGenes = [];
+		var buttonGenes = [],
+			fusionGenes = [],
+			initialPopulation = true;
+
+		if (fittestButtons !== undefined)
+		{
+			initialPopulation = false; 
+
+			for(geneKey in this.availableGenes)
+			{
+				fusionGenes.push(fittestButtons[Math.round(Math.random())].genes[geneKey]);
+			}
+		}
 
 		for(geneKey in this.availableGenes)
 		{
-			if (initialPopulation || Math.floor(Math.random() * 3) === 0)
+			var geneTemplate = this.availableGenes[geneKey];
+
+			if (initialPopulation || Math.floor(Math.random() * this.mutationFrequency) === 0)
 			{
-				buttonGenes.push(this.generateGeneValue(geneKey));
+				buttonGenes.push(this.generateGeneValue(geneTemplate));
 			}
 			else
 			{
@@ -88,10 +144,8 @@ Generator.prototype.generatePopulation = function(fittestButtons)
 /**
  * Generate a random value for the given gene
  */
-Generator.prototype.generateGeneValue = function(geneKey)
+Generator.prototype.generateGeneValue = function(geneTemplate)
 {
-	var geneTemplate = this.availableGenes[geneKey];
-
 	// choose gene
 	if (geneTemplate.type === 'choose')
 	{
@@ -105,6 +159,23 @@ Generator.prototype.generateGeneValue = function(geneKey)
 			Math.floor(Math.random() * 256),
 			Math.floor(Math.random() * 256)
 		];
+	}
+	// max gene
+	else if (geneTemplate.type === 'max')
+	{
+		return Math.floor(Math.random() * geneTemplate['max']);
+	}
+	// max gene
+	else if (geneTemplate.type === 'nested')
+	{
+		var values = [];
+
+		for(geneKey in geneTemplate['genes'])
+		{
+			values.push(this.generateGeneValue(geneTemplate['genes'][geneKey]));
+		}
+
+		return values;
 	}
 };
 
@@ -215,6 +286,26 @@ Button.prototype.render = function()
 				+ this.genes[geneKey][0] + ', ' 
 				+ this.genes[geneKey][1] + ', ' 
 				+ this.genes[geneKey][2] + ', 1)';
+		}
+		// nested gene
+		else if (geneTemplate.type === 'nested')
+		{
+			var geneValue = geneTemplate.template;
+
+			for(nestedGeneKey in this.genes[geneKey])
+			{
+				geneValue = geneValue.replace('$' + nestedGeneKey, this.genes[geneKey][nestedGeneKey]);
+			}
+		}
+		// everything else
+		else
+		{
+			geneValue = this.genes[geneKey];
+		}
+
+		if (geneTemplate.suffix)
+		{
+			geneValue += geneTemplate.suffix;
 		}
 
 		this.element.style[geneTemplate.attr] = geneValue;
