@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Genetic Buttons</title>
+	<script type="text/javascript" src="genetic-buttons.js"></script>
+	<style type="text/css">
+		html, body {
+			margin: 0;
+			padding: 0;
+		}
+		.button-container {
+		    float: left;
+		    width: calc(25% - 22px);
+		    border: 1px solid #ececec;
+		    min-height: 100px;
+		    margin: 5px;
+			padding: 5px;
+		}
+		.button-container.selected {
+			border: 1px solid #07cc44;
+			outline: 4px solid #07cc44;
+		}
+	</style>
+</head>
+<body>
+
+	<div id="generator-container"></div>
+
+	<script type="text/javascript">
+		/**
+		 * Start the generator
+		 */
+		var buttonGenerator = new Generator(genes, document.getElementById('generator-container'));
+
+		// generate the inital population
+		buttonGenerator.generatePopulation();
+	</script>
+</body>
+</html>
