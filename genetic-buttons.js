@@ -34,8 +34,6 @@ var genes =
 		attr: "text-decoration",
 		type: "choose",
 		options: [
-			"collection1",
-			"property1",
 			"none",
 			"underline",
 			"overline",
@@ -52,7 +50,13 @@ var genes =
 	},
 	{
 		attr: "backgroundColor",
-		type: "color",
+		type: "choose",
+		options: [
+			"transparent",
+			{
+				type: "color"
+			}
+		],
 	},
 
 	// -- Padding / Margin
@@ -80,6 +84,32 @@ var genes =
 		max: 20,
 		suffix: 'px'
 	},
+	{
+		attr: "border-color",
+		type: "color",
+	},
+	{
+		attr: "border-size",
+		type: "max",
+		max: 5,
+		suffix: 'px'
+	},
+	{
+		attr: "border-style",
+		type: "choose",
+		options: [
+			"dotted",
+			"dashed",
+			"solid",
+			"double",
+			"groove",
+			"ridge",
+			"inset",
+			"outset",
+			"none",
+			"hidden",
+		]
+	},
 ];
 
 /**
@@ -93,6 +123,7 @@ var Generator = function(genes, container)
 	// current buttons
 	this.population = [];
 	this.selected = [];
+	this.epoch = 0;
 
 	// the size of population to be generated
 	this.populationSize = 40;
@@ -105,6 +136,8 @@ var Generator = function(genes, container)
  */
 Generator.prototype.generatePopulation = function(fittestButtons)
 {
+	this.epoch++;
+
 	for (var i = 0; i < this.populationSize; i++)
 	{
 		var buttonGenes = [],
@@ -125,7 +158,7 @@ Generator.prototype.generatePopulation = function(fittestButtons)
 		{
 			var geneTemplate = this.availableGenes[geneKey];
 
-			if (initialPopulation || Math.floor(Math.random() * this.mutationFrequency) === 0)
+			if (initialPopulation || Math.floor(Math.random() * this.mutationFrequency + this.epoch) === 0)
 			{
 				buttonGenes.push(this.generateGeneValue(geneTemplate));
 			}
